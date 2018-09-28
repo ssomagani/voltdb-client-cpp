@@ -27,6 +27,7 @@
 #include <string>
 #include "ParameterSet.hpp"
 #include "ByteBuffer.hpp"
+#include <iostream>
 
 namespace voltdb {
 
@@ -51,6 +52,27 @@ public:
         m_params.reset();
         return &m_params;
     }
+
+    /**
+     * Accept vector of Stored Procedure Parameter indices and a vector of Parameter values
+     * and initialize the rest of the Parameters to nulls.
+     * Helps avoid code bloat for larger ParameterSets.
+     */
+	ParameterSet* params(std::vector<int32_t>& argIndices
+			, std::vector<std::function<void (voltdb::ParameterSet* params) > > & argFuncs) {
+		m_params.reset();
+		int argVectorsIndex = 0;
+		for (int i = 0; i < m_params.m_parameters.size(); i++) {
+			int argIndex = argIndices[argVectorsIndex];
+			if (i == argIndex) {
+				argFuncs[argVectorsIndex].operator ()(&m_params);
+				argVectorsIndex++;
+			} else {
+				m_params.addNull();
+			}
+		}
+		return &m_params;
+	}
 
     int32_t getSerializedSize() {
         return
