@@ -7,6 +7,7 @@ RM=rm -rf
 OPTIMIZATION=-O3
 CFLAGS=$(BOOST_INCLUDES) $(VOLT_INCLUDES) -g3 ${OPTIMIZATION}
 CFLAGS += -fPIC
+CFLAGS += -g -std=c++11 -Wall -pedantic
 
 PLATFORM = $(shell uname)
 ifeq ($(PLATFORM),Darwin)
