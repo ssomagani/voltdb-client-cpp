@@ -57,10 +57,24 @@ int main(int argc, char **argv) {
     /*
      * Load the database.
      */
-    voltdb::ParameterSet* params = procedure.params();
-    params->addString("English").addString("Hello").addString("World");
+
+    std::vector<int32_t> argIndices;
+    argIndices.push_back(0);
+    argIndices.push_back(2);
+
+    std::vector<std::function<void (voltdb::ParameterSet*) > > argFuncs;
+
+    auto set1 = [] (voltdb::ParameterSet* params) {params->addString("English");};
+    auto set2 = [] (voltdb::ParameterSet* params) {params->addString("World");};
+
+    argFuncs.push_back(set1);
+    argFuncs.push_back(set2);
+
+    voltdb::ParameterSet* params = procedure.params(argIndices, argFuncs);
     response = client.invoke(procedure);
     if (response.failure()) { std::cout << response.toString() << std::endl; return -1; }
+
+//    voltdb::ParameterSet* params = procedure.params();
 
     params->addString("French").addString("Bonjour").addString("Monde");
     response = client.invoke(procedure);
@@ -87,7 +101,7 @@ int main(int argc, char **argv) {
     /*
      * Retrieve the message
      */
-    selectProc.params()->addString("Spanish");
+    selectProc.params()->addString("English");
     response = client.invoke(selectProc);
 
     /*
